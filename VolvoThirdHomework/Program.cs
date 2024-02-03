@@ -46,10 +46,15 @@ namespace VolvoThirdHomework
                 BooksStatistics sentenceStatistics = new BooksStatistics();
                 string longestSentence = await sentenceStatistics.GetLongestSentenceAsync(filesToWork[index - 1]);
                 string shortestSentence = await sentenceStatistics.GetShortestSentenceAsync(filesToWork[index - 1]);
+                string longestWord = await sentenceStatistics.GetLongestWordAsync(filesToWork[index - 1]);
+
+                
 
 
                 readTaskList.Add(CountWordsAsync(filesToWork[index - 1], filePath));
-                await File.WriteAllTextAsync(filePath, $"Longest sentence: {longestSentence}\n Shortest sentence: {shortestSentence}");
+                await File.WriteAllTextAsync(filePath, $"Longest sentence: {longestSentence}" +
+                    $"\n Shortest sentence: {shortestSentence}" +
+                    $"\n Longest word: {longestWord}");
             }
 
             await Task.WhenAll(readTaskList);

@@ -22,14 +22,26 @@ namespace VolvoThirdHomework
         {
             return await Task.Run(() =>
             {
-                string[] sentences = Regex.Split(text, @"(?<=[.!?])\s+");
+                string[] sentences = text.Split(new[] { '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
                 string shortestSentence = sentences
-                    .Where(s => char.IsUpper(s.FirstOrDefault()) && s.Length > 1)
-                    .OrderBy(s => new string(s.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray()))
+                    .Where(s => s.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Length > 1)
+                    .OrderBy(s => s.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Length)
                     .FirstOrDefault();
                 return shortestSentence != null ? shortestSentence.Trim() : "No sentences found.";
             });
-
         }
+        public async Task<string> GetLongestWordAsync(string text)
+        {
+            return await Task.Run(() =>
+            {
+                string[] words = Regex.Split(text, @"\W+"); string longestWord = words
+                    .Where(word => !string.IsNullOrWhiteSpace(word))
+                    .OrderByDescending(word => word.Length)
+                    .FirstOrDefault();
+                return longestWord != null ? longestWord.Trim() : "No words found.";
+            });
+        }
+
     }
 }
+
