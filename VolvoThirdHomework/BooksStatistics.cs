@@ -9,34 +9,47 @@ namespace VolvoThirdHomework
 {
     internal class BooksStatistics
     {
-        public async Task<string> GetLongestSentenceAsync(string text)
+        public static string[] SplitIntoSentences(string text)
         {
-            return await Task.Run(() =>
-            {
-                string[] sentences = text.Split(new[] { '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
-                string longestSentence = sentences.OrderByDescending(s => s.Length).FirstOrDefault();
-                return longestSentence != null ? longestSentence.Trim() : "No sentences found.";
-            });
+            return Regex.Split(text, @"(?<=[.!?])\s+")
+                .Where(sentence =>
+                    !Regex.IsMatch(sentence, @"^\d") &&                  
+                    Regex.IsMatch(sentence, @"^[A-Z]") &&              
+                    !Regex.IsMatch(sentence, @"^[A-Z]+\.$") &&        
+                    !Regex.IsMatch(sentence, @"^[A-Z]\!$") &&    
+                    !Regex.IsMatch(sentence, @"^[A-Z]+[.!?]+$") &&       
+                    !Regex.IsMatch(sentence, @"^.*[.!?][A-Z]+$")&&
+                     !Regex.IsMatch(sentence, @"\b[A-Z]+\.[A-Z]+\b"))
+                .ToArray();
         }
         public async Task<string> GetShortestSentenceAsync(string text)
         {
             return await Task.Run(() =>
             {
-                var sentences = Regex.Split(text, @"(?<=[.!?])\s+");
+                var nonSentenceWords = Enum.GetNames(typeof(NonSentenceWords));
 
-                var shortestSentence = sentences
-                    .Where(s => s.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Length >= 1
-                                && !Enum.GetNames(typeof(NonSentenceWords)).Any(word => s.StartsWith(word, StringComparison.OrdinalIgnoreCase))
-                                && !char.IsUpper(s.Last())
-                                && !(s.Length == 2 && char.IsPunctuation(s.Last()))
-                                && !char.IsDigit(s.First())
-                                && !s.StartsWith("'")
-                                && !s.StartsWith("-")
-                                && char.IsUpper(s.First()))
-                    .OrderBy(s => s.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Length)
-                    .FirstOrDefault()?.TrimEnd(' ');
+                string[] sentences = SplitIntoSentences(text);
+                string shortestSentenceByWords = sentences
+                    .Where(sentence => !nonSentenceWords.Any(nonSentenceWord => sentence.TrimStart().StartsWith(nonSentenceWord, StringComparison.OrdinalIgnoreCase)))
+                    .OrderBy(sentence => sentence.Split().Length)
+                    .FirstOrDefault();
 
-                return shortestSentence ?? "No suitable sentences found.";
+                return shortestSentenceByWords ?? "No suitable sentences found.";
+            });
+        }
+        public async Task<string> GetLongestSentenceAsync(string text)
+        {
+            return await Task.Run(() =>
+            {
+                var nonSentenceWords = Enum.GetNames(typeof(NonSentenceWords));
+
+                string[] sentences = SplitIntoSentences(text);
+                string longestSentenceByChars = sentences
+                    .Where(sentence => !nonSentenceWords.Any(nonSentenceWord => sentence.Contains(nonSentenceWord, StringComparison.OrdinalIgnoreCase)))
+                    .OrderByDescending(sentence => sentence.Length)
+                    .FirstOrDefault();
+
+                return longestSentenceByChars != null ? longestSentenceByChars.Trim() : "No suitable sentences found.";
             });
         }
 
@@ -53,28 +66,24 @@ namespace VolvoThirdHomework
             });
         }
 
-        public async Task<string> WordsSortedByUsageDescending(string text)
+        public async Task<string> GetWordsByUsageDescendingAsync(string text)
         {
             return await Task.Run(() =>
             {
-                string cleanedText = Regex.Replace(text, @"[^\w\s]", "").ToLower();
+                string[] words = Regex.Split(text, @"\W+")
+                    .Where(word => !string.IsNullOrWhiteSpace(word))
+                    .ToArray();
 
-                var wordCounts = new Dictionary<string, int>();
-                var words = Regex.Matches(cleanedText, @"\b\w+\b")
-                                .Cast<Match>()
-                                .Select(m => m.Value);
+                var wordsByUsage = words
+                    .GroupBy(word => word, StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(group => group.Count())
+                    .Select(group => $"{group.Key}: {group.Count()}")
+                    .ToList();
 
-                foreach (var word in words)
-                {
-                    wordCounts[word] = wordCounts.ContainsKey(word) ? wordCounts[word] + 1 : 1;
-                }
-
-                var sortedWords = wordCounts.OrderByDescending(pair => pair.Value)
-                                           .Select(pair => $"{pair.Key}: {pair.Value}");
-
-                return string.Join(Environment.NewLine, sortedWords);
+                return string.Join(Environment.NewLine, wordsByUsage);
             });
         }
+
         public async Task<string> GetMostCommonLettersAsync(string text)
         {
             return await Task.Run(() =>

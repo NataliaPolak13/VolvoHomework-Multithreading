@@ -40,7 +40,7 @@ namespace VolvoThirdHomework
                 string longestSentence = await sentenceStatistics.GetLongestSentenceAsync(filesToWork[index - 1]);
                 string shortestSentence = await sentenceStatistics.GetShortestSentenceAsync(filesToWork[index - 1]);
                 string longestWord = await sentenceStatistics.GetLongestWordAsync(filesToWork[index - 1]);
-                string wordsSortedInDescendingOrder = await sentenceStatistics.WordsSortedByUsageDescending(filesToWork[index - 1]);
+                string wordsSortedInDescendingOrder = await sentenceStatistics.GetWordsByUsageDescendingAsync(filesToWork[index - 1]);
                 string mostCommonLetters = await sentenceStatistics.GetMostCommonLettersAsync(filesToWork[index - 1]);
 
 
