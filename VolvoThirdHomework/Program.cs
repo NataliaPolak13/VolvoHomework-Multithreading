@@ -47,14 +47,17 @@ namespace VolvoThirdHomework
                 string longestSentence = await sentenceStatistics.GetLongestSentenceAsync(filesToWork[index - 1]);
                 string shortestSentence = await sentenceStatistics.GetShortestSentenceAsync(filesToWork[index - 1]);
                 string longestWord = await sentenceStatistics.GetLongestWordAsync(filesToWork[index - 1]);
+                string wordsSortedInDescendingOrder = await sentenceStatistics.WordsSortedByUsageDescending(filesToWork[index - 1]);
 
-                
+
+
 
 
                 readTaskList.Add(CountWordsAsync(filesToWork[index - 1], filePath));
                 await File.WriteAllTextAsync(filePath, $"Longest sentence: {longestSentence}" +
                     $"\n Shortest sentence: {shortestSentence}" +
-                    $"\n Longest word: {longestWord}");
+                    $"\n Longest word: {longestWord}" +
+                    $"\n Words sorted by the number of uses in descending order:\n{wordsSortedInDescendingOrder}");
             }
 
             await Task.WhenAll(readTaskList);
