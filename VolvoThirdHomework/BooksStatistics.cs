@@ -57,10 +57,8 @@ namespace VolvoThirdHomework
         {
             return await Task.Run(() =>
             {
-                // Usuwanie znaków specjalnych, zamiana na małe litery
                 string cleanedText = Regex.Replace(text, @"[^\w\s]", "").ToLower();
 
-                // Zliczanie i sortowanie unikalnych pełnych słów
                 var wordCounts = new Dictionary<string, int>();
                 var words = Regex.Matches(cleanedText, @"\b\w+\b")
                                 .Cast<Match>()
@@ -68,14 +66,7 @@ namespace VolvoThirdHomework
 
                 foreach (var word in words)
                 {
-                    if (wordCounts.ContainsKey(word))
-                    {
-                        wordCounts[word]++;
-                    }
-                    else
-                    {
-                        wordCounts[word] = 1;
-                    }
+                    wordCounts[word] = wordCounts.ContainsKey(word) ? wordCounts[word] + 1 : 1;
                 }
 
                 var sortedWords = wordCounts.OrderByDescending(pair => pair.Value)
@@ -84,7 +75,23 @@ namespace VolvoThirdHomework
                 return string.Join(Environment.NewLine, sortedWords);
             });
         }
+        public async Task<string> GetMostCommonLettersAsync(string text)
+        {
+            return await Task.Run(() =>
+            {
+                var mostCommonLetters = text?
+                    .Where(char.IsLetter)
+                    .GroupBy(char.ToLower)
+                    .OrderByDescending(group => group.Count())
+                    .FirstOrDefault();
 
+                var mostCommonLetterString = mostCommonLetters != null
+                    ? $"{mostCommonLetters.Key}: {mostCommonLetters.Count()}"
+                    : "No letters found.";
+
+                return mostCommonLetterString;
+            });
+        }
 
     }
 }
