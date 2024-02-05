@@ -9,6 +9,26 @@ namespace VolvoThirdHomework
 {
     internal class AsyncOperations
     {
+        private static AsyncOperations instance;
+        private static readonly object lockObject = new object();
+
+        private AsyncOperations() { }
+
+        public static AsyncOperations Instance
+        {
+            get
+            {
+                lock (lockObject)
+                {
+                    if (instance == null)
+                    {
+                        instance = new AsyncOperations();
+                    }
+                    return instance;
+                }
+            }
+        }
+
         public async Task<string[]> ReadingAsync(string folderPath)
         {
             string[] filePaths = Directory.GetFiles(folderPath);
@@ -24,11 +44,14 @@ namespace VolvoThirdHomework
             }
             return texts.ToArray();
         }
-
         public async Task ParallelResultsWriteAsync(string[] filesToWork)
         {
             string folderPath = Path.Combine(Environment.CurrentDirectory, "BooksOperations");
-            Directory.CreateDirectory(folderPath); IList<Task> readTaskList = new List<Task>();
+            Directory.CreateDirectory(folderPath);
+            IList<Task> readTaskList = new List<Task>();
+
+            BooksStatistics sentenceStatistics = new BooksStatistics();
+
 
             for (int index = 1; index <= 100; ++index)
             {
@@ -36,13 +59,11 @@ namespace VolvoThirdHomework
                 string fileName = $"{title}.txt";
                 string filePath = Path.Combine(folderPath, fileName);
 
-                BooksStatistics sentenceStatistics = new BooksStatistics();
                 string longestSentence = await sentenceStatistics.GetLongestSentenceAsync(filesToWork[index - 1]);
                 string shortestSentence = await sentenceStatistics.GetShortestSentenceAsync(filesToWork[index - 1]);
                 string longestWord = await sentenceStatistics.GetLongestWordAsync(filesToWork[index - 1]);
                 string wordsSortedInDescendingOrder = await sentenceStatistics.GetWordsByUsageDescendingAsync(filesToWork[index - 1]);
                 string mostCommonLetters = await sentenceStatistics.GetMostCommonLettersAsync(filesToWork[index - 1]);
-
 
                 await File.WriteAllTextAsync(filePath, $"Longest sentence: {longestSentence}" +
                     $"\n Shortest sentence: {shortestSentence}" +
@@ -53,6 +74,7 @@ namespace VolvoThirdHomework
 
             await Task.WhenAll(readTaskList);
         }
+
         static string GetValidFileName(string title)
         {
             char[] invalidChars = Path.GetInvalidFileNameChars();
