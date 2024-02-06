@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace VolvoThirdHomework
 {
-    internal class AsyncOperations
+    internal class AsyncFileHandler
     {
-        private static AsyncOperations instance;
+        private static AsyncFileHandler instance;
         private static readonly object lockObject = new object();
 
-        private AsyncOperations() { }
+        private AsyncFileHandler() { }
 
-        public static AsyncOperations Instance
+        public static AsyncFileHandler Instance
         {
             get
             {
@@ -22,7 +22,7 @@ namespace VolvoThirdHomework
                 {
                     if (instance == null)
                     {
-                        instance = new AsyncOperations();
+                        instance = new AsyncFileHandler();
                     }
                     return instance;
                 }

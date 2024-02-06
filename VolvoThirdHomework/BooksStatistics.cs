@@ -11,9 +11,8 @@ namespace VolvoThirdHomework
     {
         public static string[] SplitIntoSentences(string text)
         {
-            return Regex.Split(text, @"(?<=[.!?])\s+")
+            return Regex.Split(text, @"(?<=[.!?]([""”])?)\s+")
         .Select(sentence => Regex.Replace(sentence, @"(\.{4,})$", "..."))
-       // .Select(sentence => Regex.Replace(sentence, @"([.!?])[""”]*\s*", m => $"{m.Groups[1].Value} "))
         .Where(sentence =>
                     !Regex.IsMatch(sentence, @"^\d") &&                  
                     Regex.IsMatch(sentence, @"^[A-Z]") &&              
@@ -85,7 +84,7 @@ namespace VolvoThirdHomework
             return await Task.Run(() =>
             {
                 string[] words = Regex.Split(text, @"\W+")
-                    .Where(word => !string.IsNullOrWhiteSpace(word) && word.Any(char.IsDigit) && !word.Any(char.IsNumber))
+                    .Where(word => !string.IsNullOrWhiteSpace(word))
                     .ToArray();
 
                 var wordsByUsage = words

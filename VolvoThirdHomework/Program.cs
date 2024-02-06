@@ -13,7 +13,7 @@ namespace VolvoThirdHomework
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
 
-            AsyncOperations asyncOperations = AsyncOperations.Instance;
+            AsyncFileHandler asyncOperations = AsyncFileHandler.Instance;
             string path = @"C:\Users\natal\OneDrive\Pulpit\VOLVO\VolvoThirdHomework\100 books";
             string[] filesToWork = await asyncOperations.ReadingAsync(path);
             await asyncOperations.ParallelResultsWriteAsync(filesToWork);
