@@ -16,8 +16,6 @@ namespace VolvoThirdHomework
         .Where(sentence =>
                     !Regex.IsMatch(sentence, @"^\d") &&                  
                     Regex.IsMatch(sentence, @"^[A-Z]") &&              
-                   // !Regex.IsMatch(sentence, @"^[A-Z]+\.$") &&        
-                    //!Regex.IsMatch(sentence, @"^[A-Z]\!$") &&    
                     !Regex.IsMatch(sentence, @"^[A-Z]+[.!?]+$") &&       
                     !Regex.IsMatch(sentence, @"^.*[.!?][A-Z]+$")&&
                     !Regex.IsMatch(sentence, @".*\*\s") && //due to a problem with the table in the BEOWULF book

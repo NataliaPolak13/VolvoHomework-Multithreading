@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace VolvoThirdHomework
 {
@@ -31,7 +32,9 @@ namespace VolvoThirdHomework
 
         public async Task<string[]> ReadingAsync(string folderPath)
         {
-            string[] filePaths = Directory.GetFiles(folderPath);
+            string[] filePaths = Directory.GetFiles(folderPath, "*", SearchOption.TopDirectoryOnly)
+                .Where(path => !new FileInfo(path).Attributes.HasFlag(FileAttributes.System | FileAttributes.Hidden))
+                .ToArray();
             var readTasks = filePaths.Select(async filePath =>
             {
                 try
@@ -57,18 +60,20 @@ namespace VolvoThirdHomework
 
             List<Task> writeTasks = new List<Task>();
 
-            for (int index = 1; index <= 100; ++index)
+            Console.WriteLine(filesToWork.Length);
+
+            foreach (string file in filesToWork)
             {
                 BookTitle bookTitle = new BookTitle();
-                string title = bookTitle.GetTitle(filesToWork[index - 1]);
+                string title = bookTitle.GetTitle(file);
                 string fileName = $"{title}.txt";
                 string filePath = Path.Combine(folderPath, fileName);
 
-                string longestSentence = await sentenceStatistics.GetLongestSentenceAsync(filesToWork[index - 1]);
-                string shortestSentence = await sentenceStatistics.GetShortestSentenceAsync(filesToWork[index - 1]);
-                string longestWord = await sentenceStatistics.GetLongestWordAsync(filesToWork[index - 1]);
-                string wordsSortedInDescendingOrder = await sentenceStatistics.GetWordsByUsageDescendingAsync(filesToWork[index - 1]);
-                string mostCommonLetters = await sentenceStatistics.GetMostCommonLettersAsync(filesToWork[index - 1]);
+                string longestSentence = await sentenceStatistics.GetLongestSentenceAsync(file);
+                string shortestSentence = await sentenceStatistics.GetShortestSentenceAsync(file);
+                string longestWord = await sentenceStatistics.GetLongestWordAsync(file);
+                string wordsSortedInDescendingOrder = await sentenceStatistics.GetWordsByUsageDescendingAsync(file);
+                string mostCommonLetters = await sentenceStatistics.GetMostCommonLettersAsync(file);
 
                 writeTasks.Add(File.WriteAllTextAsync(filePath, $"Longest sentence:\n{longestSentence} \n" +
                     $"\nShortest sentence:\n{shortestSentence} \n" +
@@ -78,6 +83,7 @@ namespace VolvoThirdHomework
             }
 
             await Task.WhenAll(writeTasks);
+            Console.WriteLine("Processing completed.");
         }
     }
 }

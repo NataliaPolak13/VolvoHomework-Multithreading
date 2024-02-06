@@ -23,7 +23,7 @@ namespace VolvoThirdHomework
             Match match = Regex.Match(text, pattern);
             string title = match.Success ? match.Groups[1].Value : "NoTitle";
             return GetValidFileName(title);
-
         }
     }
 }
+
