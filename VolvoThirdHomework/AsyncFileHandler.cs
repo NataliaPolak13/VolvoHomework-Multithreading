@@ -29,7 +29,6 @@ namespace VolvoThirdHomework
                 }
             }
         }
-
         public async Task<string[]> ReadingAsync(string folderPath)
         {
             string[] filePaths = Directory.GetFiles(folderPath, "*", SearchOption.TopDirectoryOnly)
@@ -60,9 +59,7 @@ namespace VolvoThirdHomework
 
             List<Task> writeTasks = new List<Task>();
 
-            Console.WriteLine(filesToWork.Length);
-
-            foreach (string file in filesToWork)
+            writeTasks = filesToWork.Select(async file =>
             {
                 BookTitle bookTitle = new BookTitle();
                 string title = bookTitle.GetTitle(file);
@@ -75,12 +72,15 @@ namespace VolvoThirdHomework
                 string wordsSortedInDescendingOrder = await sentenceStatistics.GetWordsByUsageDescendingAsync(file);
                 string mostCommonLetters = await sentenceStatistics.GetMostCommonLettersAsync(file);
 
-                writeTasks.Add(File.WriteAllTextAsync(filePath, $"Longest sentence:\n{longestSentence} \n" +
+                await File.WriteAllTextAsync(filePath, $"Longest sentence:\n{longestSentence} \n" +
                     $"\nShortest sentence:\n{shortestSentence} \n" +
                     $"\nLongest word:\n{longestWord}  \n" +
                     $"\nThe most common letter:\n{mostCommonLetters}  \n" +
-                    $"\nWords sorted by the number of uses in descending order:\n{wordsSortedInDescendingOrder}  \n"));
-            }
+                    $"\nWords sorted by the number of uses in descending order:\n{wordsSortedInDescendingOrder}  \n");
+
+                Console.WriteLine($"File title '{title}' processed.");
+
+            }).ToList();
 
             await Task.WhenAll(writeTasks);
             Console.WriteLine("Processing completed.");
