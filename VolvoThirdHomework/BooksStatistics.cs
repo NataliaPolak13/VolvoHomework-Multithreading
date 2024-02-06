@@ -13,15 +13,15 @@ namespace VolvoThirdHomework
         {
             return Regex.Split(text, @"(?<=[.!?])\s+")
         .Select(sentence => Regex.Replace(sentence, @"(\.{4,})$", "..."))
+       // .Select(sentence => Regex.Replace(sentence, @"([.!?])[""”]*\s*", m => $"{m.Groups[1].Value} "))
         .Where(sentence =>
                     !Regex.IsMatch(sentence, @"^\d") &&                  
                     Regex.IsMatch(sentence, @"^[A-Z]") &&              
-                    !Regex.IsMatch(sentence, @"^[A-Z]+\.$") &&        
-                    !Regex.IsMatch(sentence, @"^[A-Z]\!$") &&    
+                   // !Regex.IsMatch(sentence, @"^[A-Z]+\.$") &&        
+                    //!Regex.IsMatch(sentence, @"^[A-Z]\!$") &&    
                     !Regex.IsMatch(sentence, @"^[A-Z]+[.!?]+$") &&       
                     !Regex.IsMatch(sentence, @"^.*[.!?][A-Z]+$")&&
                     !Regex.IsMatch(sentence, @".*\*\s") && //due to a problem with the table in the BEOWULF book
-                    //gdy za kropką jest zamknięcie cudzysłowy literackiego
                      !Regex.IsMatch(sentence, @"\b[A-Z]+\.[A-Z]+\b"))
                 .ToArray();
         }
@@ -41,7 +41,7 @@ namespace VolvoThirdHomework
                     .ToList()
             );
 
-            return string.Join(Environment.NewLine, shortestSentencesByWords) ?? "No suitable sentences found.";
+            return string.Join(Environment.NewLine, shortestSentencesByWords) ?? "No sentences found.";
         }
 
         public async Task<string> GetLongestSentenceAsync(string text)
@@ -59,21 +59,25 @@ namespace VolvoThirdHomework
                     .ToList());
 
             var formattedResult = longestSentenceByChars.Select(sentence => $"{sentence}{Environment.NewLine}{Environment.NewLine}");
-            return string.Join(" ", formattedResult) ?? "No suitable sentences found.";
+            return string.Join(" ", formattedResult) ?? "No sentences found.";
         }
 
         public async Task<string> GetLongestWordAsync(string text)
         {
 
                 string[] words = Regex.Split(text, @"\W+"); 
-                string longestWord = await Task.Run(() =>
+                var longestWord = await Task.Run(() =>
                 words
                     .Where(word => !string.IsNullOrWhiteSpace(word))
+                    .Select(word => word.Trim('_'))
                     .OrderByDescending(word => word.Length)
-                    .FirstOrDefault()
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase)
+                    .Take(10)
+                    .ToList()
+
                 );
 
-            return longestWord != null ? longestWord.Trim() : "No words found.";
+            return string.Join(Environment.NewLine, longestWord) ?? "No words found.";
         }
 
         public async Task<string> GetWordsByUsageDescendingAsync(string text)
@@ -81,13 +85,14 @@ namespace VolvoThirdHomework
             return await Task.Run(() =>
             {
                 string[] words = Regex.Split(text, @"\W+")
-                    .Where(word => !string.IsNullOrWhiteSpace(word))
+                    .Where(word => !string.IsNullOrWhiteSpace(word) && word.Any(char.IsDigit) && !word.Any(char.IsNumber))
                     .ToArray();
 
                 var wordsByUsage = words
                     .GroupBy(word => word, StringComparer.OrdinalIgnoreCase)
                     .OrderByDescending(group => group.Count())
                     .Select(group => $"{group.Key}: {group.Count()}")
+                    .Take(10)
                     .ToList();
 
                 return string.Join(Environment.NewLine, wordsByUsage);
@@ -102,10 +107,10 @@ namespace VolvoThirdHomework
                     .Where(char.IsLetter)
                     .GroupBy(char.ToLower)
                     .OrderByDescending(group => group.Count())
-                    .FirstOrDefault();
+                    .Take(10);
 
                 var mostCommonLetterString = mostCommonLetters != null
-                    ? $"{mostCommonLetters.Key}: {mostCommonLetters.Count()}"
+                ? string.Join(Environment.NewLine, mostCommonLetters.Select(group => $"{group.Key}: {group.Count()}"))
                     : "No letters found.";
 
                 return mostCommonLetterString;

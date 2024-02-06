@@ -70,11 +70,11 @@ namespace VolvoThirdHomework
                 string wordsSortedInDescendingOrder = await sentenceStatistics.GetWordsByUsageDescendingAsync(filesToWork[index - 1]);
                 string mostCommonLetters = await sentenceStatistics.GetMostCommonLettersAsync(filesToWork[index - 1]);
 
-                writeTasks.Add(File.WriteAllTextAsync(filePath, $"Longest sentence: {longestSentence} \n" +
-                    $"\n Shortest sentence: {shortestSentence} \n" +
-                    $"\n Longest word: {longestWord}  \n" +
-                    $"\n The most common letter is: {mostCommonLetters}  \n" +
-                    $"\n Words sorted by the number of uses in descending order:\n{wordsSortedInDescendingOrder}  \n"));
+                writeTasks.Add(File.WriteAllTextAsync(filePath, $"Longest sentence:\n{longestSentence} \n" +
+                    $"\nShortest sentence:\n{shortestSentence} \n" +
+                    $"\nLongest word:\n{longestWord}  \n" +
+                    $"\nThe most common letter:\n{mostCommonLetters}  \n" +
+                    $"\nWords sorted by the number of uses in descending order:\n{wordsSortedInDescendingOrder}  \n"));
             }
 
             await Task.WhenAll(writeTasks);
