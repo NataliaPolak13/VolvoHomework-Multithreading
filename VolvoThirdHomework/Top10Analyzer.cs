@@ -67,7 +67,6 @@ namespace VolvoThirdHomework
                 .Take(10)
                 .ToList();
 
-            // Dodajemy nagłówek
             longestWords.Insert(0, "Top 10 longest words:");
 
             return longestWords;
@@ -102,17 +101,39 @@ namespace VolvoThirdHomework
 
         public static List<string> WordsByUsageDescending(string input)
         {
-            List<string> sections = new List<string>();
+            Dictionary<string, int> wordCounts = new Dictionary<string, int>();
+
             string pattern = @"Words sorted by the number of uses in descending order:(.*?)(?:Longest sentence:|$)";
             Regex regex = new Regex(pattern, RegexOptions.Singleline);
             MatchCollection matches = regex.Matches(input);
 
             foreach (Match match in matches)
             {
-                sections.Add(match.Groups[1].Value.Trim());
+                string wordsSection = match.Groups[1].Value.Trim();
+                string[] lines = wordsSection.Split('\n');
+
+                foreach (string line in lines)
+                {
+                    string[] parts = line.Split(':');
+                    if (parts.Length == 2)
+                    {
+                        string word = parts[0].Trim().ToLower();
+                        int count = int.Parse(parts[1].Trim());
+                        if (wordCounts.ContainsKey(word))
+                            wordCounts[word] += count;
+                        else
+                            wordCounts[word] = count;
+                    }
+                }
             }
 
-            return sections;
+            List<string> wordList = wordCounts.Select(pair => $"{pair.Key}: {pair.Value}").ToList();
+            wordList.Sort((x, y) => int.Parse(y.Split(':')[1].Trim()).CompareTo(int.Parse(x.Split(':')[1].Trim())));
+
+            List<string> top10Words = wordList.Take(10).ToList();
+            top10Words.Insert(0, "Top ten words sorted by the number of uses:");
+
+            return top10Words;
         }
 
         public static void CombineResultsToFile(string folderPath)

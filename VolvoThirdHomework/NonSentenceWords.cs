@@ -22,6 +22,7 @@ namespace VolvoThirdHomework
         CHAPTER,
         PART,
         Section,
+        GREEK,
         //BOOK
     }
 }
