@@ -11,15 +11,15 @@ namespace VolvoThirdHomework
     {
         static async Task Main(string[] args)
         {
-            Stopwatch stopwatch = Stopwatch.StartNew();
+            //Stopwatch stopwatch = Stopwatch.StartNew();
 
             AsyncFileHandler asyncOperations = AsyncFileHandler.Instance;
             string path = @"C:\Users\natal\OneDrive\Pulpit\VOLVO\VolvoThirdHomework\100 books";
             string[] filesToWork = await asyncOperations.ReadingAsync(path);
             await asyncOperations.ParallelResultsWriteAsync(filesToWork);
 
-            stopwatch.Stop();
-            Console.WriteLine($"Czas trwania: {stopwatch.ElapsedMilliseconds} ms");
+            //stopwatch.Stop();
+            //Console.WriteLine($"Time: {stopwatch.ElapsedMilliseconds} ms");
         }
 
     }

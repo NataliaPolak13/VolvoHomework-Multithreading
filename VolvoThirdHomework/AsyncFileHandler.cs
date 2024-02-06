@@ -84,6 +84,21 @@ namespace VolvoThirdHomework
 
             await Task.WhenAll(writeTasks);
             Console.WriteLine("Processing completed.");
+            string combinedFilePath = Path.Combine(folderPath, "Top10.txt");
+            using (StreamWriter writer = new StreamWriter(combinedFilePath))
+            {
+                foreach (var filePath in filesToWork.Select(file => Path.Combine(folderPath, $"{new BookTitle().GetTitle(file)}.txt")))
+                {
+                    string[] lines = await File.ReadAllLinesAsync(filePath);
+                    foreach (string line in lines)
+                    {
+                        await writer.WriteLineAsync(line);
+                    }
+                }
+            }
+
+            Top10Analyzer.CombineResultsToFile(folderPath);
+
         }
     }
 }
