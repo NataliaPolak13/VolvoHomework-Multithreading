@@ -32,30 +32,35 @@ namespace VolvoThirdHomework
         public async Task<string[]> ReadingAsync(string folderPath)
         {
             string[] filePaths = Directory.GetFiles(folderPath);
-            List<string> texts = new List<string>();
-
-            if (filePaths.Length > 0)
+            var readTasks = filePaths.Select(async filePath =>
             {
-                foreach (var filePath in filePaths)
+                try
                 {
-                    string text = await File.ReadAllTextAsync(filePath);
-                    texts.Add(text);
+                    return await File.ReadAllTextAsync(filePath);
                 }
-            }
-            return texts.ToArray();
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error reading file '{filePath}': {ex.Message}");
+                    return string.Empty;
+                }
+            });
+
+            string[] texts = await Task.WhenAll(readTasks);
+            return texts;
         }
         public async Task ParallelResultsWriteAsync(string[] filesToWork)
         {
             string folderPath = Path.Combine(Environment.CurrentDirectory, "BooksOperations");
             Directory.CreateDirectory(folderPath);
-            IList<Task> readTaskList = new List<Task>();
 
             BooksStatistics sentenceStatistics = new BooksStatistics();
 
+            List<Task> writeTasks = new List<Task>();
 
             for (int index = 1; index <= 100; ++index)
             {
-                string title = GetTitle(filesToWork[index - 1]);
+                BookTitle bookTitle = new BookTitle();
+                string title = bookTitle.GetTitle(filesToWork[index - 1]);
                 string fileName = $"{title}.txt";
                 string filePath = Path.Combine(folderPath, fileName);
 
@@ -65,31 +70,14 @@ namespace VolvoThirdHomework
                 string wordsSortedInDescendingOrder = await sentenceStatistics.GetWordsByUsageDescendingAsync(filesToWork[index - 1]);
                 string mostCommonLetters = await sentenceStatistics.GetMostCommonLettersAsync(filesToWork[index - 1]);
 
-                await File.WriteAllTextAsync(filePath, $"Longest sentence: {longestSentence}" +
-                    $"\n Shortest sentence: {shortestSentence}" +
-                    $"\n Longest word: {longestWord}" +
-                    $"\n Words sorted by the number of uses in descending order:\n{wordsSortedInDescendingOrder}" +
-                    $"\n The most common letter is: {mostCommonLetters}");
+                writeTasks.Add(File.WriteAllTextAsync(filePath, $"Longest sentence: {longestSentence} \n" +
+                    $"\n Shortest sentence: {shortestSentence} \n" +
+                    $"\n Longest word: {longestWord}  \n" +
+                    $"\n The most common letter is: {mostCommonLetters}  \n" +
+                    $"\n Words sorted by the number of uses in descending order:\n{wordsSortedInDescendingOrder}  \n"));
             }
 
-            await Task.WhenAll(readTaskList);
-        }
-
-        static string GetValidFileName(string title)
-        {
-            char[] invalidChars = Path.GetInvalidFileNameChars();
-            return new string(title
-                .Where(c => !invalidChars.Contains(c))
-                .ToArray());
-        }
-
-        static string GetTitle(string text)
-        {
-            string pattern = @"Title:\s*(.*)";
-            Match match = Regex.Match(text, pattern);
-            string title = match.Success ? match.Groups[1].Value : "NoTitle";
-
-            return GetValidFileName(title);
+            await Task.WhenAll(writeTasks);
         }
     }
 }

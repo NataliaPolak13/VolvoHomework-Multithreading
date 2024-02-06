@@ -12,58 +12,68 @@ namespace VolvoThirdHomework
         public static string[] SplitIntoSentences(string text)
         {
             return Regex.Split(text, @"(?<=[.!?])\s+")
-                .Where(sentence =>
+        .Select(sentence => Regex.Replace(sentence, @"(\.{4,})$", "..."))
+        .Where(sentence =>
                     !Regex.IsMatch(sentence, @"^\d") &&                  
                     Regex.IsMatch(sentence, @"^[A-Z]") &&              
                     !Regex.IsMatch(sentence, @"^[A-Z]+\.$") &&        
                     !Regex.IsMatch(sentence, @"^[A-Z]\!$") &&    
                     !Regex.IsMatch(sentence, @"^[A-Z]+[.!?]+$") &&       
                     !Regex.IsMatch(sentence, @"^.*[.!?][A-Z]+$")&&
+                    !Regex.IsMatch(sentence, @".*\*\s") && //due to a problem with the table in the BEOWULF book
+                    //gdy za kropką jest zamknięcie cudzysłowy literackiego
                      !Regex.IsMatch(sentence, @"\b[A-Z]+\.[A-Z]+\b"))
                 .ToArray();
         }
+
         public async Task<string> GetShortestSentenceAsync(string text)
         {
-            return await Task.Run(() =>
-            {
-                var nonSentenceWords = Enum.GetNames(typeof(NonSentenceWords));
+            var nonSentenceWords = Enum.GetNames(typeof(NonSentenceWords));
 
-                string[] sentences = SplitIntoSentences(text);
-                string shortestSentenceByWords = sentences
+            string[] sentences = SplitIntoSentences(text);
+
+            var shortestSentencesByWords = await Task.Run(() =>
+                sentences
                     .Where(sentence => !nonSentenceWords.Any(nonSentenceWord => sentence.TrimStart().StartsWith(nonSentenceWord, StringComparison.OrdinalIgnoreCase)))
                     .OrderBy(sentence => sentence.Split().Length)
-                    .FirstOrDefault();
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase)
+                    .Take(10)
+                    .ToList()
+            );
 
-                return shortestSentenceByWords ?? "No suitable sentences found.";
-            });
+            return string.Join(Environment.NewLine, shortestSentencesByWords) ?? "No suitable sentences found.";
         }
+
         public async Task<string> GetLongestSentenceAsync(string text)
         {
-            return await Task.Run(() =>
-            {
-                var nonSentenceWords = Enum.GetNames(typeof(NonSentenceWords));
+            var nonSentenceWords = Enum.GetNames(typeof(NonSentenceWords));
 
-                string[] sentences = SplitIntoSentences(text);
-                string longestSentenceByChars = sentences
-                    .Where(sentence => !nonSentenceWords.Any(nonSentenceWord => sentence.Contains(nonSentenceWord, StringComparison.OrdinalIgnoreCase)))
+            string[] sentences = SplitIntoSentences(text);
+
+            var longestSentenceByChars = await Task.Run(() =>
+                sentences
+                    .Where(sentence => !nonSentenceWords.Any(nonSentenceWord 
+                    => sentence.Contains(nonSentenceWord, StringComparison.OrdinalIgnoreCase)))
                     .OrderByDescending(sentence => sentence.Length)
-                    .FirstOrDefault();
+                    .Take(10)
+                    .ToList());
 
-                return longestSentenceByChars != null ? longestSentenceByChars.Trim() : "No suitable sentences found.";
-            });
+            var formattedResult = longestSentenceByChars.Select(sentence => $"{sentence}{Environment.NewLine}{Environment.NewLine}");
+            return string.Join(" ", formattedResult) ?? "No suitable sentences found.";
         }
 
         public async Task<string> GetLongestWordAsync(string text)
         {
-            return await Task.Run(() =>
-            {
+
                 string[] words = Regex.Split(text, @"\W+"); 
-                string longestWord = words
+                string longestWord = await Task.Run(() =>
+                words
                     .Where(word => !string.IsNullOrWhiteSpace(word))
                     .OrderByDescending(word => word.Length)
-                    .FirstOrDefault();
-                return longestWord != null ? longestWord.Trim() : "No words found.";
-            });
+                    .FirstOrDefault()
+                );
+
+            return longestWord != null ? longestWord.Trim() : "No words found.";
         }
 
         public async Task<string> GetWordsByUsageDescendingAsync(string text)

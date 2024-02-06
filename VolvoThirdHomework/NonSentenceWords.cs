@@ -21,5 +21,7 @@ namespace VolvoThirdHomework
         Ltd,
         CHAPTER,
         PART,
+        Section,
+        //BOOK
     }
 }
